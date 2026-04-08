@@ -76,7 +76,6 @@ export class UsersService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
     return this.databaseService.user.delete({ where: { id } });
   }
 }

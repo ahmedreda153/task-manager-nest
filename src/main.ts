@@ -21,10 +21,10 @@ async function bootstrap() {
   const port = configService.get<number>('PORT') ?? 3000;
 
   app.use(helmet());
-
-  if (nodeEnv === 'development') {
-    app.use(morgan('dev'));
-  }
+  app.enableCors({
+    origin: configService.get<string>('ALLOWED_ORIGINS'),
+    credentials: true,
+  });
 
   app.use(cookieParser());
 
@@ -40,14 +40,18 @@ async function bootstrap() {
   app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  const config = new DocumentBuilder()
-    .setTitle('Task Manager Application')
-    .setDescription('Task Manager API Application')
-    .setVersion('v1')
-    .build();
+  if (nodeEnv === 'development') {
+    app.use(morgan('dev'));
+    const config = new DocumentBuilder()
+      .setTitle('Task Manager Application')
+      .setDescription('Task Manager API Application')
+      .setVersion('v1')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   await app.listen(port);
 }
