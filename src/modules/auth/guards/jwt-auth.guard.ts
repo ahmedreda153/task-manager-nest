@@ -1,0 +1,17 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  handleRequest<TUser = unknown>(err: Error | null, user: TUser): TUser {
+    if (err || !user) {
+      throw (
+        err ||
+        new UnauthorizedException(
+          'You are not logged in! Please log in to get access.',
+        )
+      );
+    }
+    return user;
+  }
+}
